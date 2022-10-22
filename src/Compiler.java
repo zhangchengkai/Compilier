@@ -13,7 +13,7 @@ import Parser.MxLexer;
 import java.io.*;
 import java.util.Objects;
 
-public class Main {
+public class Compiler {
     public static void main(String[] args) throws Exception{
         String name = "basic-71.mx";
 //        InputStream input = new FileInputStream(name);
