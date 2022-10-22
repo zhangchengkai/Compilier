@@ -147,7 +147,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode>{
         return new MonoExprNode(tmpOp,tmpNode,new Position(ctx));
     }
 
-    @Override//many many
+    @Override//operand1=expression op operand2=expression
     public ASTNode visitBinaryExpr(MxParser.BinaryExprContext ctx) {
         String op = ctx.op.getText();
         ExprNode ls = (ExprNode) visit(ctx.operand1);
