@@ -33,7 +33,82 @@ public class IRBuilder implements ASTVisitor {
         //先填充typetable，放入所有的type
         //插入global function
         //插入各class里的function，添加默认构造函数
-        //todo
+        this.targetModule=_module;
+        this.gScope=_gScope;
+        this.cScope=new IRScope(null,IRScope.scopeType.Global);
+        this.typeTable=new HashMap<>();
+        this.funcTable=new HashMap<>();
+        this.stringTable=new HashMap<>();
+        this.globalInit=new LinkedList<>();
+        this.curBlock=null;
+        this.curFunction=null;
+        this.curClass=null;
+        loopContinue=new Stack<>();
+        loopBreak=new Stack<>();
+        //int bool string classes   void
+        gScope.Class_Table.forEach((className,classScope)->{
+            switch(className){
+                case "int"->typeTable.put("int",new IntegerType(32));
+                case "bool"->typeTable.put("bool",new BoolType());
+                case "string"->typeTable.put("string",new PointerType(new IntegerType(8)));
+                default ->{
+                    StructType newClass=new StructType(className);
+                    typeTable.put(className,new PointerType(newClass));
+                    targetModule.addClassType(newClass);
+                }
+            }
+        });
+        typeTable.put("void",new VoidType());
+        gScope.Functions_Table.forEach((funcName,funcNode)->{
+            FunctionType funcType=new FunctionType(getType(funcNode.funcType));
+            if(funcNode.parameterList!=null) funcNode.parameterList.forEach(tmp->{
+                IRType argType=getType(tmp.varType);
+                funcType.addParameters(argType,tmp.identifier);
+            });
+            IRFunction _func=new IRFunction("_f_"+funcName,funcType);
+            if(funcNode.isBuiltin) _func.setBuiltin();
+            funcTable.put(funcName,_func);
+            targetModule.addFunction(_func);
+        });
+        //string classes
+        gScope.Class_Table.forEach((className,classScope)->{
+            switch(className){
+                case "int","bool"-> {}
+                default -> {
+                    IRType pendingType=typeTable.get(className).dePointed();
+                    if(!className.equals("string")) classScope.Variable_Table.forEach((identifier,tmpTy)->((StructType)pendingType).addMember(identifier,getType(tmpTy)));
+                    classScope.Functions_Table.forEach((funcName,funcNode)->{
+                        IRType returnTy=(funcNode==null)?new VoidType():getType(funcNode.funcType);
+                        FunctionType funcType=new FunctionType(returnTy);
+                        // add _this pointer to parameters
+                        IRType argType=new PointerType(pendingType);
+                        funcType.addParameters(argType,"_this");
+                        if(funcNode.parameterList!=null){
+                            for(VarDefNode tmp:funcNode.parameterList){
+                                argType=getType(tmp.varType);
+                                funcType.addParameters(argType,tmp.identifier);
+                            }
+                        }
+                        IRFunction _func=new IRFunction("_class_"+className+"_"+funcName,funcType);
+                        if(funcNode.isBuiltin) _func.setBuiltin();
+                        funcTable.put(_func.name,_func);
+                        targetModule.addFunction(_func);
+                    });
+                    //默认构造函数
+                    if(!className.equals("string")&&funcTable.get("_class_"+className+"_"+className)==null){
+                        FunctionType funcType=new FunctionType(new VoidType());
+                        IRType argType=new PointerType(pendingType);
+                        funcType.addParameters(argType,"_this");
+                        IRFunction _func=new IRFunction("_class_"+className+"_"+className,funcType);
+                        _func.addParameter(new Value("_arg",argType));
+                        IRBasicBlock onlyBlock=new IRBasicBlock(_func.name,_func);
+                        new Ret(new Value("BBTY",new VoidType()),onlyBlock);
+                        funcTable.put(_func.name,_func);
+                        targetModule.addFunction((_func));
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -54,7 +129,6 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public void visit(StringConstantExprNode node) {
         //对string常量先查个重
-        if(!cScope.isValid()) return;
         StringConstant stringLiteral = stringTable.get(node.value);
         if(stringLiteral == null){
             stringLiteral = new StringConstant(node.value);
@@ -73,7 +147,28 @@ public class IRBuilder implements ASTVisitor {
     public void visit(VarDefNode node) {
         //注意区分数组类型
         //区分全局 or 局部变量
-        //todo
+        IRType valueTy=getType(node.varType);
+        Value value;
+        if(cScope.parent==null){//全局变量
+            value=new GlobalDef(node.identifier,valueTy);
+            targetModule.addGlobalDef((GlobalDef) value);
+        }else value=stackAlloc(node.identifier,valueTy);
+        cScope.setVariable(node.identifier,value);
+        node.IRoperand=value;
+        if(node.initValue!=null){ // initialize
+            if(cScope.parent!=null){ // 局部变量
+                node.initValue.accept(this);
+                Value initValue=node.initValue.IRoperand;
+                if(initValue instanceof NullConstant) ((NullConstant) initValue).setType(valueTy);
+                if(initValue instanceof StringConstant) initValue=getStringPtr(initValue);
+                this.memoryStore(initValue,value);
+            }else globalInit.add(node);
+        }else{
+            if(node.varType instanceof ArrayTypeNode){
+                if(cScope.parent!=null) this.memoryStore(new NullConstant((PointerType) valueTy),value);
+                else globalInit.add(node);
+            }
+        }
     }
 
     @Override
