@@ -42,46 +42,47 @@ public class BuiltInInitiator{
         initScope.define_Function("toString",tmp);
 
         // named for _malloc so that user can not call this function
-        tmp = new FuncDefNode(new ClassTypeNode("string",new Position(-1,-1)),"_malloc",tmp_List,null,new Position(-1,-1));
+        tmp = new FuncDefNode(new ClassTypeNode("string",new Position(-1,-1)),"_heap_malloc",tmp_List,null,new Position(-1,-1));
         tmp.isBuiltin = true;
-        initScope.define_Function("_malloc",tmp);
+        initScope.define_Function("_heap_malloc",tmp);
 
         // operator overload for string
         tmp_List = new ArrayList<>();
         tmp_List.add(new VarDefNode(new ClassTypeNode("string",new Position(-1,-1)),"str1",null,new Position(-1,-1)));
         tmp_List.add(new VarDefNode(new ClassTypeNode("string",new Position(-1,-1)),"str2",null,new Position(-1,-1)));
 
-        tmp = new FuncDefNode(new ClassTypeNode("string",new Position(-1,-1)),"_str_splice",tmp_List,null,new Position(-1,-1));
+        tmp = new FuncDefNode(new ClassTypeNode("string",new Position(-1,-1)),"_string_merge",tmp_List,null,new Position(-1,-1));
         tmp.isBuiltin = true;
-        initScope.define_Function("_str_splice",tmp);
+        initScope.define_Function("_string_merge",tmp);
 
-        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_str_eq",tmp_List,null,new Position(-1,-1));
+        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_stringcmp_eq",tmp_List,null,new Position(-1,-1));
         tmp.isBuiltin = true;
-        initScope.define_Function("_str_eq",tmp);
+        initScope.define_Function("_stringcmp_eq",tmp);
 
-        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_str_ne",tmp_List,null,new Position(-1,-1));
+        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_stringcmp_neq",tmp_List,null,new Position(-1,-1));
         tmp.isBuiltin = true;
-        initScope.define_Function("_str_ne",tmp);
+        initScope.define_Function("_stringcmp_neq",tmp);
 
-        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_str_lt",tmp_List,null,new Position(-1,-1));
+        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_stringcmp_less",tmp_List,null,new Position(-1,-1));
         tmp.isBuiltin = true;
-        initScope.define_Function("_str_lt",tmp);
+        initScope.define_Function("_stringcmp_less",tmp);
 
-        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_str_le",tmp_List,null,new Position(-1,-1));
+        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_stringcmp_leq",tmp_List,null,new Position(-1,-1));
         tmp.isBuiltin = true;
-        initScope.define_Function("_str_le",tmp);
+        initScope.define_Function("_stringcmp_leq",tmp);
 
-        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_str_gt",tmp_List,null,new Position(-1,-1));
+        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_stringcmp_greater",tmp_List,null,new Position(-1,-1));
         tmp.isBuiltin = true;
-        initScope.define_Function("_str_gt",tmp);
+        initScope.define_Function("_stringcmp_greater",tmp);
 
-        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_str_ge",tmp_List,null,new Position(-1,-1));
+        tmp = new FuncDefNode(new ClassTypeNode("bool",new Position(-1,-1)),"_stringcmp_geq",tmp_List,null,new Position(-1,-1));
         tmp.isBuiltin = true;
-        initScope.define_Function("_str_ge",tmp);
+        initScope.define_Function("_stringcmp_geq",tmp);
 
         //built-in class
         initScope.define_Class("bool",new GlobalScope(initScope));
         initScope.define_Class("int",new GlobalScope(initScope));
+
         GlobalScope class_tmp = new GlobalScope(initScope); tmp_List = new ArrayList<>();
         class_tmp.define_Function("length",new FuncDefNode(new ClassTypeNode("int",new Position(-1,-1)),"length",null,null,new Position(-1,-1)).setBuiltin());
         tmp_List.add(new VarDefNode(new ClassTypeNode("int",new Position(-1,-1)),"left",null,new Position(-1,-1)));

@@ -21,6 +21,8 @@ public class StructType extends IRType{
     public void addMember(String identifier, IRType ty){
         typeTable.put(identifier,ty);
         indexTable.put(identifier, count++);
+//        System.out.println(identifier);
+//        System.out.println(count);
         typeList.add(ty);
     }
 

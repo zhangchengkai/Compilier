@@ -160,8 +160,9 @@ public class SemanticChecker implements ASTVisitor{
             node.funcInfo = FuncSize;
         }else{
             if(node.forFunc){
+//                if(node.base.exprType.typeId.equals("string")) node.member="_string_"+node.member;
                 node.funcInfo = gScope.Class_Table.get(node.base.exprType.typeId).fetch_Function(node.member);
-                if(node.funcInfo == null) throw new SemanticError("Class " + node.base.exprType.typeId + "has no function called " + node.member,node.getPos());
+                if(node.funcInfo == null) throw new SemanticError("Class " + node.base.exprType.typeId + " has no function called " + node.member,node.getPos());
             }else{
                 node.exprType = gScope.Class_Table.get(node.base.exprType.typeId).Variable_Table.get(node.member);
                 if(node.exprType == null) throw new SemanticError("Class " + node.base.exprType.typeId + "has no variable called " + node.member,node.getPos());

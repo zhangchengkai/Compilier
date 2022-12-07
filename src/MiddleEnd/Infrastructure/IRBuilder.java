@@ -23,6 +23,7 @@ public class IRBuilder implements ASTVisitor {
     public LinkedList<VarDefNode> globalInit;//global veriable initialize
     public IRBasicBlock curBlock;
     public IRFunction curFunction;
+    public IRFunction EntryFunction;
     public StructType curClass;
     public enum Operator{add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, logic_and, logic_or, eq, ne, sgt, sge, slt, sle, assign}
     // for loop nesting break & continue
@@ -186,7 +187,47 @@ public class IRBuilder implements ASTVisitor {
     public void visit(FuncCallExprNode node) {
         //调用全局函数 or 调用class内函数
         //class外调用class内 or class内调用class内
-        //todo
+        //class function(*this,....){}
+        //特判array.size()
+        //固有class：string
+        IRFunction func=null;
+        Value thisPtr=null;
+        if(node.Func instanceof IdentifierExprNode){
+            String funcName=((IdentifierExprNode) node.Func).identifier;
+            if(curClass!=null) func=funcTable.get("_"+curClass.name+"_"+funcName);
+            if(func==null) func=funcTable.get(funcName);
+            else{//class内调用，this不变
+                thisPtr=cScope.fetchValue("_this");
+                thisPtr=memoryLoad("_this",thisPtr,curBlock);
+            }
+        }else{
+            ((ObjectMemberExprNode) node.Func).base.accept(this);
+            thisPtr=((ObjectMemberExprNode) node.Func).base.IRoperand;
+            if(((ObjectMemberExprNode) node.Func).base.exprType instanceof ArrayTypeNode){
+                node.IRoperand=arraySize(thisPtr);//直接返回数组第-1项
+                return;
+            }
+            String className;
+            IRType classType=thisPtr.type.dePointed();
+            if(classType instanceof StructType) className=((StructType) classType).name;
+            else className="class_string";
+            func=funcTable.get("_"+className+"_"+((ObjectMemberExprNode) node.Func).member);
+        }
+        if(node.AryList!=null){
+            for(int i=0;i<node.AryList.size();++i){
+                ASTNode tmp=node.AryList.get(i);
+                tmp.accept(this);
+                Value tmpArg=tmp.IRoperand;
+                if(tmpArg instanceof StringConstant) tmpArg=getStringPtr(tmpArg);
+                if(tmpArg instanceof NullConstant) ((NullConstant) tmpArg).setType(((FunctionType) func.type).parametersType.get(i));
+                tmp.IRoperand=tmpArg;
+            }
+        }
+        Call newOperand=new Call(func,curBlock);
+        if(thisPtr!=null) newOperand.addArg(thisPtr);
+        if(node.AryList!=null) node.AryList.forEach(tmp->newOperand.addArg(tmp.IRoperand));
+        func.setUsed();
+        node.IRoperand=newOperand;
     }
 
     @Override

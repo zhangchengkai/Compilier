@@ -1,7 +1,7 @@
 package MiddleEnd.TypeSystem;
 
 public class PointerType extends IRType{
-    public IRType baseType;//指向的类型（高级指针指向低级指针
+    public IRType baseType;//指向的类型（底层类型
     public int dimSize;//几级指针
 
     public PointerType(IRType _base){
