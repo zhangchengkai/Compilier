@@ -3,7 +3,6 @@ import AST.RootNode;
 import BackEnd.Infrastructure.ASMBuilder;
 import BackEnd.RegAllocation.GraphColor;
 import BackEnd.RegAllocation.EasyStack;
-import Optimization.Mem2Reg;
 import FrontEnd.BuiltInInitiator;
 import FrontEnd.PreProcessor;
 import FrontEnd.SemanticChecker;
