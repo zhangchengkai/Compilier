@@ -31,7 +31,8 @@ public class Compiler {
 //        String name = "try.mx";
 //        InputStream input = new FileInputStream(name);
         InputStream input = System.in;
-        PrintStream os = System.out;
+//        PrintStream os = System.out;
+        PrintStream os = new PrintStream("output.s");
 //        os.println("wssb\n");
 
         try {
