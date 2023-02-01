@@ -785,8 +785,44 @@ public class IRBuilder implements ASTVisitor {
     }
 
     private Value recursiveNew(LinkedList<ExprNode> initList, IRType targetType){
-        //new int[][][][][]...
-        // to be continued
+        //new int[n][m][h][k][l]...
+        IRType elementType = targetType.dePointed();
+        // get element number
+        initList.getFirst().accept(this);
+        Value elementNumber = initList.getFirst().IRoperand;
+        initList.removeFirst();
+
+        Value elementByteSize = new Binary(MiddleEnd.Infrastructure.IRBuilder.Operator.mul,elementNumber,new IntConstant(elementType.byteSize()),curBlock);
+        Value totalByteSize = new Binary(MiddleEnd.Infrastructure.IRBuilder.Operator.add,elementByteSize,new IntConstant(4),curBlock);
+        // malloc
+        Value i32Pointer = heapAlloc(new PointerType(new IntegerType(32)),totalByteSize);
+        // store elementNumber
+        this.memoryStore(elementNumber,i32Pointer);
+        Gep biasPointer = new Gep(new PointerType(new IntegerType(32)),i32Pointer,curBlock);
+        biasPointer.addIndex(new IntConstant(1));
+        Value realPointer = new Bitcast(biasPointer,targetType,curBlock);
+        if(initList.size() == 0) return realPointer;
+
+        // for(nowPtr = 0; nowPtr != elementNumber; ++nowPtr){a[nowPtr]=new int[m][h][k][l]...}
+        Value ptrAddress = this.stackAlloc("array_ptr",new IntegerType(32));
+        this.memoryStore(new IntConstant(0),ptrAddress);
+        IRBasicBlock condition = new IRBasicBlock("array_new_condition",curFunction);
+        IRBasicBlock loopBody = new IRBasicBlock("array_new_body",curFunction);
+        IRBasicBlock termBlock = new IRBasicBlock(curFunction.name,curFunction);
+        new Branch(curBlock,condition);
+        curBlock = condition;
+        Value ptr = this.memoryLoad("array_ptr",ptrAddress,curBlock);
+        Value flag = new Icmp(MiddleEnd.Infrastructure.IRBuilder.Operator.ne,ptr,elementNumber,curBlock);
+        new Branch(curBlock,flag,loopBody,termBlock);
+        curBlock = loopBody;
+        Gep elementPtr = new Gep(targetType,realPointer,curBlock);
+        elementPtr.addIndex(ptr);
+        Value element = recursiveNew(initList,elementType);
+        this.memoryStore(element,elementPtr);
+        this.memoryStore(new Binary(MiddleEnd.Infrastructure.IRBuilder.Operator.add,ptr,new IntConstant(1),curBlock),ptrAddress);
+        new Branch(curBlock,condition);
+        curBlock = termBlock;
+        return realPointer;
     }
 
     private Value arraySize(Value address){

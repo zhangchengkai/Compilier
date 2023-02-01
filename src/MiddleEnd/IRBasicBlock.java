@@ -14,7 +14,7 @@ public class IRBasicBlock extends Value {
     public IRFunction parentFunction;
 
     public IRBasicBlock(String _name, IRFunction _parent) {
-        super(_name+"_bb", new LabelType());
+        super(_name+"_block", new LabelType());
         this.parentFunction = _parent;
         _parent.addBlock(this);
         this.instructions = new LinkedList<>();
@@ -28,7 +28,6 @@ public class IRBasicBlock extends Value {
 
     public void setTerminator(IRInstruction _terminator){
         if(this.terminator == null) this.terminator = _terminator;
-        // Attention : maybe cause bug
     }
 
     @Override
