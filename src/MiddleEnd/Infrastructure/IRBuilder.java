@@ -344,7 +344,7 @@ public class IRBuilder implements ASTVisitor {
                 Value tmpRs1=node.LOperand.IRoperand;
                 if(tmpRs1 instanceof StringConstant) tmpRs1=getStringPtr(tmpRs1);
                 if(tmpRs2 instanceof StringConstant) tmpRs2=getStringPtr(tmpRs2);
-                if(tmpRs1 instanceof IRConstant && tmpRs2 instanceof IRConstant){
+                if (tmpRs1 instanceof IRConstant && tmpRs2 instanceof IRConstant && (op != Operator.sdiv || ((IntConstant) tmpRs2).value != 0)) {
                     newOperand=calculateConstant(op,(IRConstant) tmpRs1,(IRConstant) tmpRs2);
                 }else{
                     //string a is a i8 pointer
