@@ -1,9 +1,9 @@
 import os
 import time
 
-# os.system("export CLASSPATH=\"/mnt/c/Users/Z/Desktop/compilier/compilier/antlr-4.9.2-complete.jar:$CLASSPATH\"")
-#            export CLASSPATH= "/mnt/c/Users/Z/Desktop/compilier/compilier/antlr-4.9.2-complete.jar:."
-#            export CLASSPATH="/mnt/c/Users/Z/Desktop/compilier/compilier/antlr-4.9.2-complete.jar:."
+# export CLASSPATH="/mnt/e/Compiler-Design/antlr-4.10.1-complete.jar:$CLASSPATH"
+
+
 judge_list = open("../../Compiler-2021-testcases/codegen/judgelist.txt").readlines()
 
 cnt = 0
@@ -15,11 +15,12 @@ for judge in judge_list:
     cnt += 1
 
     code_file = judge.replace("\n", "").replace("./", "../../Compiler-2021-testcases/codegen/")
-    # print(code_file)
-    # print("cp {code_file} test.mx".format(code_file=code_file))
-    input_file = "input.txt"
-    output_file = "output.txt"
-    std_file = "std.txt"
+    print(code_file)
+
+    input_file = "1.in"
+    output_file = "1.out"
+    std_file = "1.ans"
+    #这三个文件名不能改(要和test-asm.sh中保持一致)
 
     input_fp = open(input_file, "w")
     output_fp = open(output_file, "w")
@@ -48,10 +49,11 @@ for judge in judge_list:
     output_fp.close()
     std_fp.close()
 
-    # print("\033[34m Loading finish. Start to run LLVM IR.")
+    print("\033[34m Loading finish. Start to run.")
     
-    os.system("cd ../src && javac Main.java &&  cp {code_file} test.mx && java Main<test.mx>test.ll &&cd ../debug".format(code_file=code_file))
-    os.system("cp ../src/test.ll test.ll && ./test-llvm-ir.sh<{input_file}>{output_file}".format(input_file=input_file,output_file=output_file))
+    os.system("cd ../src && javac Main.java &&  cp {code_file} test.mx && java Main<test.mx>test.s &&cd ../debug".format(code_file=code_file))
+    
+    os.system("cp ../src/test.s test.s && ./test-asm.sh")
 
 
     wrap = os.popen(
@@ -66,6 +68,7 @@ for judge in judge_list:
             testpoint=code_file + ", point " + str(cnt)))
         # print("[info]: ", info)
         fail_collect.append(code_file)
+        break
 
     time.sleep(1)
 
