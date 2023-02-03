@@ -21,18 +21,12 @@ import java.util.Objects;
 
 public class Compiler {
     public static void main(String[] args) throws Exception{
-//			CharStream input = CharStreams.fromFileName("E:\\Compiler-Design\\src\\test.mx");//新建一个CharStream读取数据
-//        CharStream input = CharStreams.fromStream(System.in); // 从stdin读取数据
-//			PrintStream ps=new PrintStream("E:\\Compiler-Design\\debug\\test.ll");
-//        PrintStream ps=System.out;
-//			System.out.println(input);
-//			System.out.println("-----------");
-
 //        String name = "try.mx";
 //        InputStream input = new FileInputStream(name);
         InputStream input = System.in;
 //        PrintStream os = System.out;
         PrintStream os = new PrintStream("output.s");
+//        PrintStream os=new PrintStream("C:\\Users\\Z\\Desktop\\compilier\\compilier\\debug\\test.s");
 //        os.println("wssb\n");
 
         try {
@@ -68,11 +62,11 @@ public class Compiler {
             ASMBuilder asmB = new ASMBuilder();
             asmB.visit(module);
 //            os.println(asmB.output.printASM());
-            EasyStack regAlloc = new EasyStack(asmB.output);
-            regAlloc.process();
-            os.println(regAlloc.ripe.printASM());
-//            GraphColor regAlloc = new GraphColor(asmB.output);
+//            EasyStack regAlloc = new EasyStack(asmB.output);
+//            regAlloc.process();
 //            os.println(regAlloc.ripe.printASM());
+            GraphColor regAlloc = new GraphColor(asmB.output);
+            os.println(regAlloc.ripe.printASM());
 
 
             os=new PrintStream("builtin.s");

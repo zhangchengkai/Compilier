@@ -156,7 +156,7 @@ public class PrintBuiltin {
             "\tmv\ts3, a0\n" +
             "\tadd\ta1, s1, s0\n" +
             "\tmv\ta2, s2\n" +
-            "\tcall\tmemcpy@plt\n" +
+            "\tcall\tmemcpy\n" +
             "\tadd\ta0, s3, s2\n" +
             "\tsb\tzero, 0(a0)\n" +
             "\tmv\ta0, s3\n" +
@@ -174,10 +174,16 @@ public class PrintBuiltin {
             "\t.p2align\t2\n" +
             "\t.type\t_class_string_parseInt,@function\n" +
             "_class_string_parseInt:\n" +
+            "\taddi\tsp, sp, -16\n" +
+            "\tsw\tra, 12(sp)\n" +
             "\tlui\ta1, %hi(.L.str)\n" +
             "\taddi\ta1, a1, %lo(.L.str)\n" +
-            "\tmv\ta2, a0\n" +
-            "\ttail\tsprintf\n" +
+            "\taddi\ta2, sp, 8\n" +
+            "\tcall\tsscanf\n" +
+            "\tlw\ta0, 8(sp)\n" +
+            "\tlw\tra, 12(sp)\n" +
+            "\taddi\tsp, sp, 16\n" +
+            "\tret\n" +
             ".Lfunc_end10:\n" +
             "\t.size\t_class_string_parseInt, .Lfunc_end10-_class_string_parseInt\n" +
             "\n" +
@@ -208,7 +214,7 @@ public class PrintBuiltin {
             "\t.p2align\t2\n" +
             "\t.type\t_f_println,@function\n" +
             "_f_println:\n" +
-            "\ttail\tputs@plt\n" +
+            "\ttail\tputs\n" +
             ".Lfunc_end13:\n" +
             "\t.size\t_f_println, .Lfunc_end13-_f_println\n" +
             "\n" +
