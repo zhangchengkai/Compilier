@@ -1,5 +1,6 @@
 package BackEnd.RegAllocation;
 
+import java.util.Random;
 import BackEnd.Infrastructure.ASMBlock;
 import BackEnd.Infrastructure.ASMFunction;
 import BackEnd.Infrastructure.ASMModule;
@@ -12,6 +13,7 @@ import java.util.*;
 
 public class GraphColor {
     static final int K = 28;
+    Random r;
     public ASMModule ripe;
 
     public HashSet<String> physical_register;
@@ -42,6 +44,7 @@ public class GraphColor {
     public HashSet<String> spilled_nodes;
 
     public GraphColor(ASMModule raw){
+        r = new Random();
         this.ripe = raw;
         physical_register = new HashSet<>(PhysicalRegister.phyRegName);
         int count = 0;
@@ -457,7 +460,7 @@ public class GraphColor {
                     if (PhysicalRegister.callerSaved_check.contains(futureColor)) {
                         assigned = true;
                         color.put(toAssign, futureColor);
-                        break;
+                        if(r.nextBoolean()) break;
                     }
                 }
                 if(!assigned){ // only callee saved
