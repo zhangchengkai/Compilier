@@ -10,6 +10,7 @@ import MiddleEnd.IRModule;
 import MiddleEnd.Infrastructure.IRBuilder;
 import Utils.GlobalScope;
 import Utils.MxErrorListener;
+import Optimization.Mem2Reg;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -47,14 +48,15 @@ public class Compiler {
             gScope = initialer.init(gScope);
             PreProcessor preprocess = new PreProcessor(gScope);
             preprocess.visit(rt);
-
             SemanticChecker semanticCheck = new SemanticChecker(gScope);
             semanticCheck.visit(rt);
 
             IRModule module = new IRModule();
+//            os.println("---------------------------------------");
             IRBuilder irb = new IRBuilder(module, gScope);
             irb.visit(rt);
             irb.processGlobalInit();
+            Mem2Reg opt1 = new Mem2Reg(module);
 //            System.out.println("visit OK here");
 //            os.println(module);
 
