@@ -1,0 +1,5 @@
+LLVM IR其实在clang的codegen后并不是strict-SSA结构，因为这时候局部变量表现为alloca指令，同时对局部变量通过load和store进行读写操作，这会导致局部变量可能会存在多个def(多个store指令)，而SSA要求每个变量只能有一个def。这时LLVM会通过标准的SSA构造算法来将原始IR转换成minimal-SSA并最终转换成prune-SSA，这一切都在mem2reg的pass中实现。
+
+实现了一个简单的指令化简，消除了alloc指令，改为直接分配虚拟寄存器，同时修改其余指令引用的寄存器地址。
+
+效果还不错。
